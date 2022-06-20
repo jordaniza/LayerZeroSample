@@ -8,14 +8,26 @@ contract LayerZeroContract is NonblockingLzApp {
 
     mapping(uint => bool) public acceptedChainIds;
 
-
     // ---------------
     // Errors
     // ---------------
     error UnknownChain(uint16 chainId);
 
-    constructor() {
+    constructor(address _lzEndpoint) NonblockingLzApp(_lzEndpoint) {
         count = 0;
+    }
+
+    function ping() public pure returns (bool success) {
+        return true;
+    }
+
+    function _nonblockingLzReceive(
+        uint16 _srcChainId,
+        bytes memory _srcAddress,
+        uint64 _nonce,
+        bytes memory _payload
+    ) internal override {
+        count += 1;
     }
 
     /// @dev implement the lzSend, we're going to allow any dest chain id to be passed 
@@ -25,9 +37,16 @@ contract LayerZeroContract is NonblockingLzApp {
         if (!acceptedChainIds[_dstChainId]) revert UnknownChain(_dstChainId);
 
         // We do not send any data we only increment
-        bytes _payload = bytes("");
-
+        bytes memory _payload = bytes("");
         
+        // address to rebate any additional gas fees
+        address payable _refundAddress = payable(msg.sender);
+
+        // from docs - looks to be a future feature
+        address _zroPaymentAddress = address(0);
+
+        // advanced feature we don't need at this stage
+        bytes memory _adapterParams = bytes("");
 
         _lzSend(
             _dstChainId,
@@ -37,4 +56,6 @@ contract LayerZeroContract is NonblockingLzApp {
             _adapterParams
         );
     }
+
+
 }
