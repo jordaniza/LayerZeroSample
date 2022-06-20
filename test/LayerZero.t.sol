@@ -5,6 +5,7 @@ import "forge-std/Test.sol";
 import "forge-std/console.sol";
 import "src/LayerZero.sol";
 import "./mocks/LZEndpointMock.sol";
+import "src/interfaces/ILayerZeroEndpoint.sol";
 
 contract TestLayerZeroApp is Test {
     LayerZeroContract public lz;
@@ -29,6 +30,8 @@ contract TestLayerZeroApp is Test {
         address oracle;
     }
 
+    address mainnetEndpoint = 0x66A71Dcef29A0fFBDBE3c6a460a3B5BC225Cd675;
+
     enum AppConfigOptions {
         DONOTUSE,
         INBOUNDPROOFLIBRARYVERSION,
@@ -41,10 +44,7 @@ contract TestLayerZeroApp is Test {
 
     function setUp() public {
         // https://layerzero.gitbook.io/docs/technical-reference/mainnet/supported-chain-ids
-        lz = new LayerZeroContract(
-            // mainnet endpoint
-            0x66A71Dcef29A0fFBDBE3c6a460a3B5BC225Cd675
-        );
+        lz = new LayerZeroContract(mainnetEndpoint);
 
         mock = new LZEndpointMock(mainnetChainId);
 
@@ -98,7 +98,6 @@ contract TestLayerZeroApp is Test {
 
 
     function testCanGetRelayer() public {
-
         uint8 layerZeroLibVersion = 1;
         uint16 mainnetChainId = 1;
         uint oracleConfigOption = 6;
@@ -124,13 +123,31 @@ contract TestLayerZeroApp is Test {
         assert(ATrustedInB);
     }
 
-    function testIncrementCounterCrossChain () public {
-        assertEq(_lzMockA.count(), 0);
-        assertEq(_lzMockB.count(), 0);
+    function testIncrementCounterCrossChain(uint _qty) public {
+        _lzMockB.crossChainIncrement(mainnetChainId, _qty);
+        _lzMockA.crossChainIncrement(mainnetChainId, _qty);
 
-        _lzMockA.crossChainIncrement(mainnetChainId);
-
-        assertEq(_lzMockB.count(), 1);
+        assertEq(_lzMockA.count(), _qty);
+        assertEq(_lzMockB.count(), _qty);
     }
-  
+
+    function testCanEstimateGasPriceForTransaction() public {
+        uint16 _dstChainId = mainnetChainId;
+        address _userApplication = address(lz);
+        bytes memory _payload = abi.encodePacked(uint(100));
+        bool _payInZRO = false;
+        bytes memory _adapterParam = bytes("");
+                
+        (uint nativeFee, uint zroFee) = ILayerZeroEndpoint(mainnetEndpoint).estimateFees(
+            _dstChainId,
+            _userApplication,
+            _payload,
+            _payInZRO,
+            _adapterParam
+        );
+
+        console.log("native fee estimation", nativeFee);
+
+        assertEq(zroFee, 0);
+        assertGt(nativeFee, 0);
 }

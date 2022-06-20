@@ -13,6 +13,8 @@ contract LayerZeroContract is NonblockingLzApp {
     // ---------------
     error UnknownChain(uint16 chainId);
 
+    event Increment(uint qty);
+
     constructor(address _lzEndpoint) NonblockingLzApp(_lzEndpoint) {
         count = 0;
         acceptedChainIds[1] = true;
@@ -28,17 +30,29 @@ contract LayerZeroContract is NonblockingLzApp {
         uint64 _nonce,
         bytes memory _payload
     ) internal override {
-        count += 1;
+        uint qty = decode(_payload);
+        count += qty;
+        emit Increment(qty);
     }
 
-    /// @dev implement the lzSend, we're going to allow any dest chain id to be passed 
+   function decode(bytes memory data) public pure returns (uint b) {
+        assembly {
+            // Load the length of data (first 32 bytes)
+            let len := mload(data)
+            // Load the data after 32 bytes, so add 0x20
+            b := mload(add(data, 0x20))
+        }
+    }    
+
     function crossChainIncrement(
-        uint16 _dstChainId
+        uint16 _dstChainId,
+        uint _incrementQty
     ) public {
         if (!acceptedChainIds[_dstChainId]) revert UnknownChain(_dstChainId);
 
         // We do not send any data we only increment
-        bytes memory _payload = bytes("");
+        bytes memory _payload = abi.encodePacked(_incrementQty);
+
         
         // address to rebate any additional gas fees
         address payable _refundAddress = payable(msg.sender);
