@@ -15,6 +15,7 @@ contract LayerZeroContract is NonblockingLzApp {
 
     constructor(address _lzEndpoint) NonblockingLzApp(_lzEndpoint) {
         count = 0;
+        acceptedChainIds[1] = true;
     }
 
     function ping() public pure returns (bool success) {
