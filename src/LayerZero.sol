@@ -52,7 +52,6 @@ contract LayerZeroContract is NonblockingLzApp {
 
         // We do not send any data we only increment
         bytes memory _payload = abi.encodePacked(_incrementQty);
-
         
         // address to rebate any additional gas fees
         address payable _refundAddress = payable(msg.sender);
@@ -71,6 +70,4 @@ contract LayerZeroContract is NonblockingLzApp {
             _adapterParams
         );
     }
-
-
 }

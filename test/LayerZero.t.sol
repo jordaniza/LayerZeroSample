@@ -150,4 +150,5 @@ contract TestLayerZeroApp is Test {
 
         assertEq(zroFee, 0);
         assertGt(nativeFee, 0);
+    }
 }
