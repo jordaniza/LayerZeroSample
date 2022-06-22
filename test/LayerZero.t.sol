@@ -99,12 +99,12 @@ contract TestLayerZeroApp is Test {
 
     function testCanGetRelayer() public {
         uint8 layerZeroLibVersion = 1;
-        uint16 mainnetChainId = 1;
+        uint16 _mainnetChainId = 1;
         uint oracleConfigOption = 6;
 
         bytes memory data = lz.getConfig(
             layerZeroLibVersion,
-            mainnetChainId, 
+            _mainnetChainId, 
             address(lz),
             uint(AppConfigOptions.RELAYER)
         );

@@ -59,7 +59,7 @@ contract TestPingPong is Test {
         pingPongB.enable(true);
     }
 
-    function testIsEnabled() public {
+    function testIsEnabled() public view {
         assert(pingPongA.paused());
         assert(pingPongB.paused());
     }
