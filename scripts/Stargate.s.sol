@@ -52,6 +52,7 @@ contract BaseScript is Script {
         uint qty = 1e9; // usdc is 6 decimals
         uint16 usdcPoolId = 1;
 
+        vm.broadcast(testingAccountAddr);
         _app.swap{value:_fee}(
             qty,
             USDC,
@@ -67,6 +68,9 @@ contract BaseScript is Script {
     function _setAllowance(address _addr) internal {
         vm.broadcast(testingAccountAddr);
         IERC20(USDC).approve(_addr, type(uint).max);
+
+        vm.broadcast(testingAccountAddr);
+        IERC20(USDC).approve(routerAddr, type(uint).max);        
 
         uint allowance = IERC20(USDC).allowance(testingAccountAddr, _addr); 
         console.log("allowance set to", allowance);
@@ -97,11 +101,11 @@ contract BaseScript is Script {
         deployedApplicationAddress = _deployedApplicationAddress;
         console.log(destinationAddress, deployedApplicationAddress);
 
-        _setAllowance(deployedApplicationAddress);
+        // uncomment if you need to approve
+        // _setAllowance(deployedApplicationAddress);
+        
         // uncomment if you need to deploy (say, on a fork)
         // _deploy();
-
-        vm.startBroadcast(testingAccountAddr);
     
         _executeSwap(
             deployedApplicationAddress,
@@ -109,8 +113,6 @@ contract BaseScript is Script {
             fees,
             destinationAddress
         );
-
-        vm.stopBroadcast();
     }
 }
 

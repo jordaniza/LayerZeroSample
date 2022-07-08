@@ -61,7 +61,8 @@ contract TestLayerZeroApp is Test {
         byteAddressA = abi.encodePacked(address(_lzMockA));
         byteAddressB = abi.encodePacked(address(_lzMockB));
 
-        // set each contract as trusted
+        // set each contract as trusted - note that in this pattern there
+        // is only one trusted remote per chain
         _lzMockA.setTrustedRemote(mainnetChainId, byteAddressB);
         _lzMockB.setTrustedRemote(mainnetChainId, byteAddressA);
     }        
